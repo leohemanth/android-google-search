@@ -23,8 +23,6 @@ public class SearchMain extends Activity {
 	EditText input;
 	OnClickListener getImageBtnOnClick = new OnClickListener() {
 		public void onClick(View view) {
-			// Toast.makeText(SearchMain.this,
-			// input.getText(),Toast.LENGTH_LONG).show();
 			Intent population = new Intent(SearchMain.this,
 					com.altheasoft.PopulationOfImages.class);
 			String a = input.getText().toString();

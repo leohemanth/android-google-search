@@ -34,17 +34,17 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class PopulationOfImages extends ListActivity {
-
-	/** Called when the activity is first created. */
 	TextView selection;
 	Bitmap bitmap;
 	Button more;
@@ -65,16 +65,12 @@ public class PopulationOfImages extends ListActivity {
 		selection = (TextView) findViewById(R.id.selection);
 		setListAdapter(i);
 
-		// Thread thread = new Thread(this);
-		// thread.start();
 		try {
 			populate();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
 			e.printStackTrace();
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
 			e.printStackTrace();
 		}
@@ -85,17 +81,13 @@ public class PopulationOfImages extends ListActivity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				try {
 					populate();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 			}
 		});
 	}
@@ -109,8 +101,6 @@ public class PopulationOfImages extends ListActivity {
 				"http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q="
 						+ a + "&rsz=4&start=" + n);
 		selection.setText(url + " ");
-		// Toast.makeText(PopulationOfImages.this, url+" ",
-		// Toast.LENGTH_LONG).show();
 		n += 4;
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				url.openStream()));
@@ -127,55 +117,10 @@ public class PopulationOfImages extends ListActivity {
 		for (int i = 0; i < resObjects.length(); i++) {
 			JSONObject j = resObjects.getJSONObject(i);
 
-			this.i.add(new data(j.getInt("width"), j.getInt("height"), j
+			this.i.add(new data(j.getInt("tbWidth"), j.getInt("tbHeight"), j
 					.getString("imageId"), j.getString("unescapedUrl"), j
 					.getString("tbUrl"), j.getString("url"), j
 					.getString("title"), j.getString("titleNoFormatting")));
-		}
-		// pd.dismiss();
-		// Toast.makeText(PopulationOfImages.this, resObjects.length() +
-		// " "+dataList.size(),Toast.LENGTH_LONG).show();
-
-	}
-
-	private void populate1() {
-		try {
-			JSONObject jObject;
-			URL url;
-			url = new URL(
-					"http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q="
-							+ a + "&rsz=4&start=" + n);
-			n += 4;
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					url.openStream()));
-			String line;
-			StringBuffer output = new StringBuffer();
-			while ((line = reader.readLine()) != null) {
-				output.append(line);
-			}
-			reader.close();
-			jObject = new JSONObject(new String(output));
-
-			JSONObject respObject = jObject.getJSONObject("responseData");
-			JSONArray resObjects = respObject.getJSONArray("results");
-			// Toast.makeText(PopulationOfImages.this, output,
-			// Toast.LENGTH_LONG).show();
-
-			// Toast.makeText(PopulationOfImages.this, resObjects.length() +
-			// " "+dataList.size(),Toast.LENGTH_LONG).show();
-			for (int i = 0; i < resObjects.length(); i++) {
-				JSONObject j = resObjects.getJSONObject(i);
-
-				this.i.add(new data(j.getInt("width"), j.getInt("height"), j
-						.getString("imageId"), j.getString("unescapedUrl"), j
-						.getString("tbUrl"), j.getString("url"), j
-						.getString("title"), j.getString("titleNoFormatting")));
-			}
-
-		} catch (Exception e) { // TODO Auto-generated catch block
-			// Toast.makeText(PopulationOfImages.this, e.toString(), 50).show();
-			// t.setText(e.toString());
-			e.printStackTrace();
 		}
 	}
 
@@ -195,13 +140,14 @@ public class PopulationOfImages extends ListActivity {
 	}
 
 	public void onListItemClick(ListView parent, View v, int position, long id) {
-		selection.setText(dataList.get(position).url);
-		Intent browserIntent = new Intent("android.intent.action.VIEW", Uri.parse(dataList.get(position).visibleUrl));
+	//	selection.setText(dataList.get(position).url);
+		Intent browserIntent = new Intent("android.intent.action.VIEW",
+				Uri.parse(dataList.get(position).visibleUrl));
 		startActivity(browserIntent);
 
 	}
 
-	class IconicAdapter extends ArrayAdapter implements Runnable {
+	class IconicAdapter extends ArrayAdapter<data> implements Runnable {
 		IconicAdapter() {
 			super(PopulationOfImages.this, R.layout.pictures, dataList);
 		}
@@ -217,17 +163,17 @@ public class PopulationOfImages extends ListActivity {
 			label.setText(dataList.get(position).visibleUrl);
 			ImageView icon = (ImageView) row.findViewById(R.id.icon);
 			if (imageDown[position] == 0) {
-//				Toast.makeText(PopulationOfImages.this,
-//						position + " inside if", Toast.LENGTH_SHORT).show();
 				icon.setImageResource(R.drawable.tulips);
+				row.setTag("dummy");
 				if (th == 0) {
 					downloadThread.start();
 				}
 				th = 1;
 			} else {
-//				Toast.makeText(PopulationOfImages.this,
-//						"setting image" + position, Toast.LENGTH_SHORT).show();
+				row.setTag("image");
 				icon.setImageDrawable(d[position]);
+				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(dataList.get(position).width, dataList.get(position).width);
+				icon.setLayoutParams(layoutParams);
 			}
 			return (row);
 		}
@@ -247,11 +193,8 @@ public class PopulationOfImages extends ListActivity {
 		private Handler handler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-//				Toast.makeText(PopulationOfImages.this,
-//						msg.toString() + " handler", Toast.LENGTH_SHORT).show();
+				//update the adapter
 				i.notifyDataSetChanged();
-				((TextView) findViewById(R.id.selection))
-						.setText("inside handler");
 			}
 		};
 
